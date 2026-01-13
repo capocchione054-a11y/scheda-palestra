@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym Tracker Pro - Database Completo</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #2563eb; --success: #10b981; --danger: #ef4444; --dark: #0f172a; --bg: #f1f5f9; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--dark); margin: 0; padding: 10px; padding-bottom: 120px; }
+        .container { max-width: 1100px; margin: 0 auto; }
+        header { text-align: center; padding: 25px; background: var(--dark); color: white; border-radius: 20px; margin-bottom: 20px; }
+        .stats-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 15px; margin-bottom: 25px; }
+        .chart-card { background: white; padding: 15px; border-radius: 18px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); height: 350px; }
+        .tabs { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 20px; padding: 5px; scrollbar-width: none; }
+        .tab-btn { padding: 12px 22px; border: none; background: #e2e8f0; border-radius: 12px; cursor: pointer; font-weight: 700; white-space: nowrap; color: #475569; }
+        .tab-btn.active { background: var(--primary); color: white; }
+        .exercise-card { background: white; border-radius: 20px; padding: 20px; margin-bottom: 20px; border-left: 8px solid var(--primary); box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .ex-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
+        .badge { background: #eff6ff; color: var(--primary); padding: 5px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; }
+        .weekly-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; overflow-x: auto; }
+        .week-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px; border-radius: 12px; min-width: 160px; }
+        .copy-btn { background: var(--primary); color: white; border: none; border-radius: 4px; padding: 2px 6px; font-size: 0.6rem; cursor: pointer; }
+        input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; text-align: center; font-weight: 700; margin-top: 4px; }
+        label { font-size: 0.6rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-top: 8px; display: block; }
+        .add-section { background: white; padding: 25px; border-radius: 20px; border: 2px dashed #cbd5e1; margin-top: 30px; }
+        .search-bar { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #cbd5e1; margin-bottom: 15px; font-size: 1rem; }
+        select { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #cbd5e1; margin-bottom: 15px; font-size: 1rem; }
+        .add-btn { width: 100%; background: var(--primary); color: white; border: none; padding: 18px; border-radius: 15px; font-weight: 800; cursor: pointer; }
+        #timer-float { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--dark); color: white; padding: 15px 30px; border-radius: 50px; display: none; align-items: center; gap: 20px; z-index: 1000; border: 2px solid var(--primary); }
+        @media (max-width: 768px) { .stats-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1 style="margin:0;">GYM TRACKER ULTRA</h1>
+        <p style="opacity:0.8;">Database Integrale: 130+ Esercizi</p>
+    </header>
+
+    <div class="stats-grid">
+        <div class="chart-card"><canvas id="setChart"></canvas></div>
+        <div class="chart-card"><canvas id="volChart"></canvas></div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchDay(1)">Giorno 1</button>
+        <button class="tab-btn" onclick="switchDay(2)">Giorno 2</button>
+        <button class="tab-btn" onclick="switchDay(3)">Giorno 3</button>
+        <button class="tab-btn" onclick="switchDay(4)">Giorno 4</button>
+        <button class="tab-btn" onclick="switchDay(5)">Giorno 5</button>
+    </div>
+
+    <div id="workoutArea"></div>
+
+    <div class="add-section">
+        <h3>🔍 Cerca nel Database</h3>
+        <input type="text" class="search-bar" id="searchEx" placeholder="Cerca muscolo o esercizio (es. Panca, Squat, Curl...)" oninput="filterSelect()">
+        <select id="exerciseSelect"></select>
+        <button class="add-btn" onclick="addExercise()">AGGIUNGI ESERCIZIO</button>
+    </div>
+</div>
+
+<div id="timer-float">
+    <span id="timer-display" style="font-size: 1.8rem; font-weight: 900; font-family: monospace;">01:30</span>
+    <button onclick="stopTimer()" style="background:var(--danger); border:none; color:white; padding:8px 15px; border-radius:10px; font-weight:bold; cursor:pointer;">STOP</button>
+</div>
+
+<script>
+    const database = [
+        // QUADRICIPITI
+        {Gruppo: "Quadricipiti", Esercizio: "Squat"}, {Gruppo: "Quadricipiti", Esercizio: "Leg Press 45°"}, {Gruppo: "Quadricipiti", Esercizio: "Leg Extension"}, {Gruppo: "Quadricipiti", Esercizio: "Affondi"}, {Gruppo: "Quadricipiti", Esercizio: "Affondi in camminata"}, {Gruppo: "Quadricipiti", Esercizio: "Affondi al multipower"}, {Gruppo: "Quadricipiti", Esercizio: "Affondi bulgari"}, {Gruppo: "Quadricipiti", Esercizio: "Leg press verticale"}, {Gruppo: "Quadricipiti", Esercizio: "Hack squat"}, {Gruppo: "Quadricipiti", Esercizio: "Sissy squat"}, {Gruppo: "Quadricipiti", Esercizio: "Reverse nordic curl"}, {Gruppo: "Quadricipiti", Esercizio: "Affondi laterali"}, {Gruppo: "Quadricipiti", Esercizio: "Adductor machine"}, {Gruppo: "Quadricipiti", Esercizio: "Adduzioni al cavo"}, {Gruppo: "Quadricipiti", Esercizio: "Step up"}, {Gruppo: "Quadricipiti", Esercizio: "Step down"}, {Gruppo: "Quadricipiti", Esercizio: "Leg extension singolo"}, {Gruppo: "Quadricipiti", Esercizio: "Squat multipower"},
+        // FEMORALI
+        {Gruppo: "Femorali", Esercizio: "Leg Curl sdraiato"}, {Gruppo: "Femorali", Esercizio: "Stacchi Gambe Tese bilanciere"}, {Gruppo: "Femorali", Esercizio: "Nordic Curl"}, {Gruppo: "Femorali", Esercizio: "Leg curl seduto"}, {Gruppo: "Femorali", Esercizio: "Leg curl sdraiato singolo"}, {Gruppo: "Femorali", Esercizio: "Leg curl seduto singolo"}, {Gruppo: "Femorali", Esercizio: "Hyperestension (focus femorali)"}, {Gruppo: "Femorali", Esercizio: "Leg curl sdraiato con manubrio"}, {Gruppo: "Femorali", Esercizio: "Leg curl in piedi"}, {Gruppo: "Femorali", Esercizio: "Leg curl in piedi al cavo"},
+        // FEMORALI E GLUTEI
+        {Gruppo: "Femorali e glutei", Esercizio: "Hip Thrust"}, {Gruppo: "Femorali e glutei", Esercizio: "Good Morning"}, {Gruppo: "Femorali e glutei", Esercizio: "Hip thrust al multipower"}, {Gruppo: "Femorali e glutei", Esercizio: "Stacco rumeno bilanciere"}, {Gruppo: "Femorali e glutei", Esercizio: "Hip thrust machine"}, {Gruppo: "Femorali e glutei", Esercizio: "Stacco rumeno manubri"}, {Gruppo: "Femorali e glutei", Esercizio: "Stacco rumeno multipower"}, {Gruppo: "Femorali e glutei", Esercizio: "Abductor machine"}, {Gruppo: "Femorali e glutei", Esercizio: "Abduzioni al cavo"}, {Gruppo: "Femorali e glutei", Esercizio: "Estensioni al cavo"}, {Gruppo: "Femorali e glutei", Esercizio: "Ponte glutei"}, {Gruppo: "Femorali e glutei", Esercizio: "Ponte glutei singolo"}, {Gruppo: "Femorali e glutei", Esercizio: "Stacco b-stance"}, {Gruppo: "Femorali e glutei", Esercizio: "Stacco unilaterale"}, {Gruppo: "Femorali e glutei", Esercizio: "Stacco da terra"}, {Gruppo: "Femorali e glutei", Esercizio: "Hyperestension (focus glutei)"},
+        // PETTO
+        {Gruppo: "Petto", Esercizio: "Panca Piana Bilanciere"}, {Gruppo: "Petto", Esercizio: "Panca Inclinata"}, {Gruppo: "Petto", Esercizio: "Croci Manubri panca piana"}, {Gruppo: "Petto", Esercizio: "Pectoral Machine"}, {Gruppo: "Petto", Esercizio: "Dips Petto"}, {Gruppo: "Petto", Esercizio: "Push up"}, {Gruppo: "Petto", Esercizio: "Panca inclinata 45°"}, {Gruppo: "Petto", Esercizio: "Croci al cavo alto"}, {Gruppo: "Petto", Esercizio: "Croci al cavo basso"}, {Gruppo: "Petto", Esercizio: "Croci al cavo (altezza petto)"}, {Gruppo: "Petto", Esercizio: "Panca piana con manubri"}, {Gruppo: "Petto", Esercizio: "Panca 30° con manubri"}, {Gruppo: "Petto", Esercizio: "Panca 45° con manubri"}, {Gruppo: "Petto", Esercizio: "Panca 15° con manubri"}, {Gruppo: "Petto", Esercizio: "Panca 15° con bilanciere"}, {Gruppo: "Petto", Esercizio: "Panca piana al multipower"}, {Gruppo: "Petto", Esercizio: "Panca 30° al multipower"}, {Gruppo: "Petto", Esercizio: "Panca 15° al multipower"}, {Gruppo: "Petto", Esercizio: "Panca 45° al multipower"}, {Gruppo: "Petto", Esercizio: "Croci manubri panca 45°"}, {Gruppo: "Petto", Esercizio: "Incline chest press"}, {Gruppo: "Petto", Esercizio: "Croci manubri panca 15°"}, {Gruppo: "Petto", Esercizio: "Chest press"}, {Gruppo: "Petto", Esercizio: "Croci manubri panca 30°"},
+        // DORSALI
+        {Gruppo: "Dorsali", Esercizio: "Lat Machine presa prona"}, {Gruppo: "Dorsali", Esercizio: "Rematore Bilanciere"}, {Gruppo: "Dorsali", Esercizio: "Pulley"}, {Gruppo: "Dorsali", Esercizio: "Pull-up"}, {Gruppo: "Dorsali", Esercizio: "Rematore Manubrio"}, {Gruppo: "Dorsali", Esercizio: "Lat machine presa supina"}, {Gruppo: "Dorsali", Esercizio: "Lat machine presa larga"}, {Gruppo: "Dorsali", Esercizio: "Pulley alta presa larga"}, {Gruppo: "Dorsali", Esercizio: "Iliac pulldown"}, {Gruppo: "Dorsali", Esercizio: "Lat unilaterale"}, {Gruppo: "Dorsali", Esercizio: "Low row con manubri"}, {Gruppo: "Dorsali", Esercizio: "Low row machine"}, {Gruppo: "Dorsali", Esercizio: "Rematore t-bar"}, {Gruppo: "Dorsali", Esercizio: "Chin up"}, {Gruppo: "Dorsali", Esercizio: "Pulldown"}, {Gruppo: "Dorsali", Esercizio: "Pulley singola"}, {Gruppo: "Dorsali", Esercizio: "Pull-up presa larga"}, {Gruppo: "Dorsali", Esercizio: "Pulldown busto ruotato panca 45°"}, {Gruppo: "Dorsali", Esercizio: "Meadows row"},
+        // TRAPEZIO
+        {Gruppo: "Trapezio", Esercizio: "Scrollate Manubri"}, {Gruppo: "Trapezio", Esercizio: "Face Pull Trapezi"}, {Gruppo: "Trapezio", Esercizio: "Kelso shrugs"}, {Gruppo: "Trapezio", Esercizio: "Tirate al mento"}, {Gruppo: "Trapezio", Esercizio: "Tirate al petto"}, {Gruppo: "Trapezio", Esercizio: "Scrollate con bilanciere"},
+        // DELTOIDE ANTERIORE
+        {Gruppo: "Deltoide anteriore", Esercizio: "Military Press"}, {Gruppo: "Deltoide anteriore", Esercizio: "Alzate Frontali manubri"}, {Gruppo: "Deltoide anteriore", Esercizio: "Arnold Press"}, {Gruppo: "Deltoide anteriore", Esercizio: "Lento con manubri panca 80°"}, {Gruppo: "Deltoide anteriore", Esercizio: "Lento con bilanciere panca 80°"}, {Gruppo: "Deltoide anteriore", Esercizio: "Lento manubri panca 60°"}, {Gruppo: "Deltoide anteriore", Esercizio: "Lento bilanciere panca 60°"}, {Gruppo: "Deltoide anteriore", Esercizio: "Lento al multipower panca 80°"}, {Gruppo: "Deltoide anteriore", Esercizio: "Lento al multipower panca 60°"}, {Gruppo: "Deltoide anteriore", Esercizio: "Alzate frontali al cavo basso"}, {Gruppo: "Deltoide anteriore", Esercizio: "Shoulder press"}, {Gruppo: "Deltoide anteriore", Esercizio: "Lento manubri unilaterale"}, {Gruppo: "Deltoide anteriore", Esercizio: "Lento avanti manubri in piedi"},
+        // DELTOIDE LATERALE
+        {Gruppo: "Deltoide laterale", Esercizio: "Alzate Laterali cavo basso"}, {Gruppo: "Deltoide laterale", Esercizio: "Alzate laterali di lato panca 30°"}, {Gruppo: "Deltoide laterale", Esercizio: "Alzate laterali con manubri"}, {Gruppo: "Deltoide laterale", Esercizio: "Alzate laterali cavo altezza anca"}, {Gruppo: "Deltoide laterale", Esercizio: "Alzate laterali di lato panca 60°"}, {Gruppo: "Deltoide laterale", Esercizio: "Delts machine"},
+        // DELTOIDE POSTERIORE
+        {Gruppo: "Deltoide posteriore", Esercizio: "Alzate Posteriori"}, {Gruppo: "Deltoide posteriore", Esercizio: "Face Pull"}, {Gruppo: "Deltoide posteriore", Esercizio: "Reverse Pec Deck"}, {Gruppo: "Deltoide posteriore", Esercizio: "Crossover posteriore al cavo"},
+        // BICIPITI
+        {Gruppo: "Bicipiti", Esercizio: "Curl Bilanciere"}, {Gruppo: "Bicipiti", Esercizio: "Curl Concentrato"}, {Gruppo: "Bicipiti", Esercizio: "Curl con manubri"}, {Gruppo: "Bicipiti", Esercizio: "Hammer curl"}, {Gruppo: "Bicipiti", Esercizio: "Spider curl panca 60°"}, {Gruppo: "Bicipiti", Esercizio: "Curl manubri panca 60/75°"}, {Gruppo: "Bicipiti", Esercizio: "Face away curl"}, {Gruppo: "Bicipiti", Esercizio: "Face away hammer curl"}, {Gruppo: "Bicipiti", Esercizio: "Curl al cavo basso"}, {Gruppo: "Bicipiti", Esercizio: "Hammer curl al cavo basso"}, {Gruppo: "Bicipiti", Esercizio: "Bayesian curl"}, {Gruppo: "Bicipiti", Esercizio: "Preacher curl panca 60°"}, {Gruppo: "Bicipiti", Esercizio: "Preacher hammer curl panca 60°"}, {Gruppo: "Bicipiti", Esercizio: "Spider curl al cavo basso panca 60°"}, {Gruppo: "Bicipiti", Esercizio: "Cad curl"}, {Gruppo: "Bicipiti", Esercizio: "Exorcist curl"}, {Gruppo: "Bicipiti", Esercizio: "Zottman curl"}, {Gruppo: "Bicipiti", Esercizio: "Cad hammer curl"}, {Gruppo: "Bicipiti", Esercizio: "Hammer curl manubri alternato"}, {Gruppo: "Bicipiti", Esercizio: "Curl manubri alternato"},
+        // TRICIPITI
+        {Gruppo: "Tricipiti", Esercizio: "French press manubri"}, {Gruppo: "Tricipiti", Esercizio: "Dips Tricipiti"}, {Gruppo: "Tricipiti", Esercizio: "Kick Back"}, {Gruppo: "Tricipiti", Esercizio: "Pushdown con corda"}, {Gruppo: "Tricipiti", Esercizio: "Overhead extension"}, {Gruppo: "Tricipiti", Esercizio: "Pushdown singolo"}, {Gruppo: "Tricipiti", Esercizio: "Overhead extension singolo"}, {Gruppo: "Tricipiti", Esercizio: "French press manubri panca 45°"}, {Gruppo: "Tricipiti", Esercizio: "French press bilanciere ez"}, {Gruppo: "Tricipiti", Esercizio: "French press panca 45° bilanciere"}, {Gruppo: "Tricipiti", Esercizio: "Pushdown sbarra"}, {Gruppo: "Tricipiti", Esercizio: "Carter extension"}, {Gruppo: "Tricipiti", Esercizio: "Overhead extension manubrio"}, {Gruppo: "Tricipiti", Esercizio: "Overhead extension manubrio singolo"}, {Gruppo: "Tricipiti", Esercizio: "Dips assistiti"}, {Gruppo: "Tricipiti", Esercizio: "Crossbody pushdown"}, {Gruppo: "Tricipiti", Esercizio: "Pullover PJR manubri"}, {Gruppo: "Tricipiti", Esercizio: "Pullover PJR bilanciere"}, {Gruppo: "Tricipiti", Esercizio: "JM press manubri"}, {Gruppo: "Tricipiti", Esercizio: "JM press multipower"}, {Gruppo: "Tricipiti", Esercizio: "JM press bilanciere"},
+        // POLPACCI
+        {Gruppo: "Polpacci", Esercizio: "Calf Raise in Piedi"}, {Gruppo: "Polpacci", Esercizio: "Calf Raise Seduto"}, {Gruppo: "Polpacci", Esercizio: "Calf Press"}, {Gruppo: "Polpacci", Esercizio: "Calf raises gamba singola"}, {Gruppo: "Polpacci", Esercizio: "Calf raises al multipower"}, {Gruppo: "Polpacci", Esercizio: "Calf raises singolo al multipower"},
+        // ADDOME
+        {Gruppo: "Addome", Esercizio: "Crunch"}, {Gruppo: "Addome", Esercizio: "Plank"}, {Gruppo: "Addome", Esercizio: "Russian Twist"}, {Gruppo: "Addome", Esercizio: "Leg Raises"}, {Gruppo: "Addome", Esercizio: "Side plank"}, {Gruppo: "Addome", Esercizio: "Farmer walk"}, {Gruppo: "Addome", Esercizio: "Crunch alla lat"}, {Gruppo: "Addome", Esercizio: "Crunch al cavo di spalle"}, {Gruppo: "Addome", Esercizio: "Crunch al cavo"}
+    ];
+
+    let currentDay = 1, timerInterval, volChart, setChart;
+    let userWorkout = JSON.parse(localStorage.getItem('gymUltraDBV1')) || { 1:[], 2:[], 3:[], 4:[], 5:[] };
+    const weekColors = ['#2563eb', '#10b981', '#f59e0b', '#ef4444'];
+
+    function init() { populateSelect(); renderWorkout(); initCharts(); }
+
+    function populateSelect(filter = "") {
+        const sel = document.getElementById('exerciseSelect');
+        sel.innerHTML = '';
+        database.sort((a,b) => a.Gruppo.localeCompare(b.Gruppo))
+                .filter(ex => ex.Esercizio.toLowerCase().includes(filter.toLowerCase()) || ex.Gruppo.toLowerCase().includes(filter.toLowerCase()))
+                .forEach(ex => {
+                    const opt = document.createElement('option');
+                    opt.value = database.indexOf(ex);
+                    opt.textContent = `${ex.Gruppo.toUpperCase()} - ${ex.Esercizio}`;
+                    sel.appendChild(opt);
+                });
+    }
+
+    function filterSelect() { populateSelect(document.getElementById('searchEx').value); }
+    function switchDay(day) { currentDay = day; document.querySelectorAll('.tab-btn').forEach((btn, i) => btn.classList.toggle('active', i+1 === day)); renderWorkout(); }
+    function save() { localStorage.setItem('gymUltraDBV1', JSON.stringify(userWorkout)); renderWorkout(); updateCharts(); }
+    
+    function addExercise() {
+        const idx = document.getElementById('exerciseSelect').value;
+        if(idx === "") return;
+        userWorkout[currentDay].push({ id: Date.now(), ...database[idx], data: Array.from({length:4}, () => ({set:0, reps:"0", weight:0})) });
+        save();
+    }
+
+    function copyWeek(exId, fromIdx) {
+        const ex = userWorkout[currentDay].find(e => e.id === exId);
+        ex.data[fromIdx+1] = JSON.parse(JSON.stringify(ex.data[fromIdx]));
+        save();
+    }
+
+    function updateVal(id, wIdx, field, val) { const ex = userWorkout[currentDay].find(e => e.id === id); ex.data[wIdx][field] = val; save(); }
+    function deleteEx(id) { if(confirm("Rimuovere?")) { userWorkout[currentDay] = userWorkout[currentDay].filter(e => e.id !== id); save(); } }
+
+    function initCharts() {
+        setChart = new Chart(document.getElementById('setChart'), {
+            type: 'bar', data: { labels: [], datasets: [
+                { label: 'S1', data: [], backgroundColor: weekColors[0] }, { label: 'S2', data: [], backgroundColor: weekColors[1] },
+                { label: 'S3', data: [], backgroundColor: weekColors[2] }, { label: 'S4', data: [], backgroundColor: weekColors[3] }
+            ]}, options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+        });
+        volChart = new Chart(document.getElementById('volChart'), {
+            type: 'line', data: { labels: ['S1', 'S2', 'S3', 'S4'], datasets: [{ label: 'Vol (kg)', data: [0,0,0,0], borderColor: '#2563eb', tension: 0.4, fill: true, backgroundColor: 'rgba(37,99,235,0.1)' }] },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+        updateCharts();
+    }
+
+    function updateCharts() {
+        let weeklyVol = [0,0,0,0], muscleData = {};
+        Object.values(userWorkout).forEach(day => { day.forEach(ex => {
+            if(!muscleData[ex.Gruppo]) muscleData[ex.Gruppo] = [0,0,0,0];
+            ex.data.forEach((w, i) => {
+                let r = w.reps.toString().includes('-') ? (w.reps.split('-').map(Number).reduce((a,b)=>a+b)/2) : parseFloat(w.reps);
+                weeklyVol[i] += (parseFloat(w.set) || 0) * (r || 0) * (parseFloat(w.weight) || 0);
+                muscleData[ex.Gruppo][i] += (parseInt(w.set) || 0);
+            });
+        });});
+        const labels = Object.keys(muscleData);
+        setChart.data.labels = labels;
+        for(let i=0; i<4; i++) setChart.data.datasets[i].data = labels.map(l => muscleData[l][i]);
+        setChart.update();
+        volChart.data.datasets[0].data = weeklyVol;
+        volChart.update();
+    }
+
+    function renderWorkout() {
+        const area = document.getElementById('workoutArea');
+        area.innerHTML = userWorkout[currentDay].length ? '' : '<p style="text-align:center;color:#94a3b8;padding:40px;">Usa la ricerca in basso per aggiungere esercizi.</p>';
+        userWorkout[currentDay].forEach(ex => {
+            const card = document.createElement('div');
+            card.className = 'exercise-card';
+            card.innerHTML = `
+                <div class="ex-header"><div><span class="badge">${ex.Gruppo}</span><strong style="display:block; font-size:1.3rem; margin-top:8px;">${ex.Esercizio}</strong></div><button onclick="startTimer(90)" style="background:var(--dark); color:white; border:none; padding:10px; border-radius:10px; cursor:pointer;">⏱️ 90s</button></div>
+                <div class="weekly-grid">${ex.data.map((w, i) => `
+                    <div class="week-box">
+                        <h4>S${i+1} ${i>0 ? `<button class="copy-btn" onclick="copyWeek(${ex.id}, ${i-1})">COPY</button>` : ''}</h4>
+                        <label>S x R</label>
+                        <div style="display:flex; gap:4px"><input type="number" value="${w.set || ''}" onchange="updateVal(${ex.id},${i},'set',this.value)" placeholder="S"><input type="text" value="${w.reps || ''}" onchange="updateVal(${ex.id},${i},'reps',this.value)" placeholder="R"></div>
+                        <label>KG</label><input type="number" value="${w.weight || ''}" onchange="updateVal(${ex.id},${i},'weight',this.value)">
+                    </div>`).join('')}</div>
+                <button onclick="deleteEx(${ex.id})" style="margin-top:20px; background:none; border:none; color:var(--danger); cursor:pointer;">🗑️ ELIMINA</button>`;
+            area.appendChild(card);
+        });
+    }
+
+    function startTimer(sec) { clearInterval(timerInterval); document.getElementById('timer-float').style.display = 'flex'; let t = sec; timerInterval = setInterval(() => { t--; document.getElementById('timer-display').innerText = `${Math.floor(t/60).toString().padStart(2,'0')}:${(t%60).toString().padStart(2,'0')}`; if(t <= 0) { clearInterval(timerInterval); alert("RIPOSO FINITO!"); stopTimer(); } }, 1000); }
+    function stopTimer() { clearInterval(timerInterval); document.getElementById('timer-float').style.display = 'none'; }
+    init();
+</script>
+</body>
+</html>
