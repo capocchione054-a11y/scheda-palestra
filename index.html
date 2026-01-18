@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gym Analytics Management System</title>
+    <title>Gym Management - Instant Archive</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
@@ -14,50 +14,41 @@
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--dark); margin: 0; padding: 10px; padding-bottom: 120px; }
         .container { max-width: 1100px; margin: 0 auto; }
         
-        /* Pannello Gestione Profili */
         .manager-panel { background: var(--dark); color: white; padding: 25px; border-radius: 20px; margin-bottom: 25px; box-shadow: 0 10px 15px rgba(0,0,0,0.2); }
         .manager-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; align-items: end; }
         .manager-panel select, .manager-panel input { width: 100%; padding: 12px; border-radius: 10px; border: none; margin-top: 5px; font-size: 1rem; }
         
-        /* Dashboard Charts */
-        .stats-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 20px; margin-bottom: 25px; }
-        .chart-card { background: var(--card); padding: 20px; border-radius: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); height: 350px; }
-        .chart-card h3 { margin: 0 0 15px 0; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--secondary); text-align: center; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; }
+        .chart-card { background: var(--card); padding: 20px; border-radius: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); height: 400px; }
+        .chart-card h3 { margin: 0 0 15px 0; font-size: 0.8rem; text-transform: uppercase; color: var(--secondary); text-align: center; }
 
-        /* Navigation */
         .action-bar { display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; align-items: center; }
         .tabs { display: flex; gap: 8px; overflow-x: auto; flex: 1; scrollbar-width: none; }
         .tab-btn { padding: 14px 25px; border: none; background: #e2e8f0; border-radius: 14px; cursor: pointer; font-weight: 700; white-space: nowrap; transition: 0.3s; }
-        .tab-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(37,99,235,0.3); }
+        .tab-btn.active { background: var(--primary); color: white; }
 
-        /* Buttons */
-        .btn { padding: 12px 20px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-print { background: #334155; color: white; }
-        .btn-danger { background: var(--danger); color: white; }
-
-        /* Exercise Cards */
         .exercise-card { background: var(--card); border-radius: 20px; padding: 20px; margin-bottom: 20px; border-left: 8px solid var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
         .badge { background: #eff6ff; color: var(--primary); padding: 5px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; }
+        
+        .controls-row { display: flex; gap: 10px; margin: 15px 0; align-items: center; background: #f8fafc; padding: 10px; border-radius: 12px; flex-wrap: wrap; }
+        .rest-input { width: 60px !important; padding: 5px !important; margin: 0 !important; }
+        .notes-area { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #e2e8f0; font-family: inherit; font-size: 0.85rem; margin-top: 10px; background: #fffbeb; }
+
         .weekly-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; overflow-x: auto; }
         .week-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px; border-radius: 12px; min-width: 155px; }
         input[type="text"], input[type="number"] { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; text-align: center; font-weight: 700; }
         label { font-size: 0.6rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-top: 8px; display: block; }
 
-        /* Timer Float */
         #timer-float { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--dark); color: white; padding: 15px 35px; border-radius: 50px; display: none; align-items: center; gap: 20px; z-index: 1000; border: 2px solid var(--primary); }
         
-        /* Print Styles */
-        #print-view { display: none; }
         @media print {
             body { background: white; padding: 0; }
-            .container, #timer-float { display: none !important; }
-            #print-view { display: block; width: 100%; padding: 20px; }
-            .print-day-section { page-break-inside: avoid; margin-bottom: 40px; }
-            table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-            th, td { border: 1px solid #000; padding: 8px; text-align: center; font-size: 10px; }
-            th { background: #f2f2f2 !important; -webkit-print-color-adjust: exact; }
-            .ex-name-cell { text-align: left; width: 30%; font-weight: bold; }
+            .container, #timer-float, .action-bar { display: none !important; }
+            #print-view { display: block; width: 100%; padding: 10px; }
+            .print-day-section { margin-bottom: 25px; page-break-inside: avoid; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid #000; padding: 4px; text-align: center; font-size: 9px; }
+            .ex-info-cell { text-align: left; width: 35%; font-weight: bold; }
         }
     </style>
 </head>
@@ -67,88 +58,126 @@
 
 <div class="container">
     <header class="manager-panel">
-        <h2 style="margin:0 0 15px 0; letter-spacing: -0.5px;">📂 ARCHIVIO GESTIONALE SCHEDE</h2>
+        <h2 style="margin:0 0 15px 0;">📂 GESTORE ATLETI E ARCHIVIO ISTANTANEO</h2>
         <div class="manager-grid">
             <div>
-                <label style="color:#94a3b8">Seleziona Atleta / Mese</label>
+                <label style="color:#94a3b8">1. Seleziona Atleta</label>
+                <select id="athleteSelector" onchange="handleAthleteChange()"></select>
+            </div>
+            <div>
+                <label style="color:#94a3b8">2. Seleziona Scheda</label>
                 <select id="profileSelect" onchange="loadProfile()"></select>
             </div>
             <div>
-                <input type="text" id="newProfileName" placeholder="Nome (es. Marco - Aprile)">
+                <input type="text" id="newProfileName" placeholder="Atleta - Mese (es. Mario - Apr)">
             </div>
-            <button class="btn btn-primary" onclick="createNewProfile()">➕ Crea Nuovo</button>
-            <button class="btn btn-danger" onclick="deleteProfile()">🗑️ Elimina</button>
+            <button class="tab-btn active" style="background:var(--primary)" onclick="createNewProfile()">➕ Crea</button>
         </div>
     </header>
 
     <div class="stats-grid">
-        <div class="chart-card"><h3>Serie per Muscolo (S1-S4)</h3><canvas id="setChart"></canvas></div>
-        <div class="chart-card"><h3>Volume Totale Progressivo (kg)</h3><canvas id="volChart"></canvas></div>
+        <div class="chart-card"><h3>Serie Muscolari (Mese Corrente)</h3><canvas id="setChart"></canvas></div>
+        <div class="chart-card"><h3 id="historyTitle">Storico Atleta</h3><canvas id="historyChart"></canvas></div>
     </div>
 
     <div class="action-bar">
         <div class="tabs">
-            <script>
-                for(let i=1; i<=5; i++) document.write(`<button class="tab-btn ${i===1?'active':''}" id="tbtn-${i}" onclick="switchDay(${i})">Giorno ${i}</button>`);
-            </script>
+            <script>for(let i=1; i<=5; i++) document.write(`<button class="tab-btn ${i===1?'active':''}" id="tbtn-${i}" onclick="switchDay(${i})">Giorno ${i}</button>`);</script>
         </div>
-        <button class="btn btn-print" onclick="generateFullPDF()">🖨️ REPORT PDF COMPLETO</button>
+        <button class="tab-btn active" style="background:#334155" onclick="generatePDF()">🖨️ PDF REPORT</button>
+        <button class="tab-btn active" style="background:var(--danger)" onclick="deleteProfile()">🗑️ ELIMINA</button>
     </div>
 
     <div id="workoutArea"></div>
 
     <div style="background: white; padding: 30px; border-radius: 25px; border: 2px dashed #cbd5e1; margin-top: 30px;">
-        <h3 style="margin-top:0">🔍 Database Esercizi (130+)</h3>
-        <input type="text" id="searchEx" placeholder="Cerca esercizio o muscolo..." oninput="filterSelect()" style="width:100%; padding:15px; border-radius:12px; border:1px solid #ddd; margin-bottom:15px; font-size:1rem;">
+        <h3>➕ Database Esercizi</h3>
+        <input type="text" id="searchEx" placeholder="Cerca esercizio..." oninput="filterSelect()" style="width:100%; padding:15px; border-radius:12px; border:1px solid #ddd; margin-bottom:15px;">
         <select id="exerciseSelect" style="width:100%; padding:15px; border-radius:12px; border:1px solid #ddd;"></select>
-        <button class="btn btn-primary" style="width:100%; margin-top:15px; padding:20px; font-size:1.1rem;" onclick="addExercise()">AGGIUNGI ESERCIZIO</button>
+        <button class="tab-btn active" style="width:100%; margin-top:15px; background:var(--primary)" onclick="addExercise()">AGGIUNGI ESERCIZIO</button>
     </div>
 </div>
 
 <div id="timer-float">
-    <span id="timer-display" style="font-size: 2rem; font-weight: 900; font-family: monospace;">01:30</span>
-    <button onclick="stopTimer()" style="background:var(--danger); border:none; color:white; padding:10px 20px; border-radius:12px; cursor:pointer; font-weight:bold;">STOP</button>
+    <span id="timer-display" style="font-size: 2.2rem; font-weight: 900; font-family: monospace;">00:00</span>
+    <button onclick="stopTimer()" style="background:var(--danger); border:none; color:white; padding:10px 20px; border-radius:12px; cursor:pointer;">STOP</button>
 </div>
 
 <script>
- // Database completo (Include categorie principali del tuo file)
-  const database = [
-        {Gruppo: "Quadricipiti", Esercizio: "Squat"}, {Gruppo: "Quadricipiti", Esercizio: "Leg Press 45°"}, {Gruppo: "Quadricipiti", Esercizio: "Leg Extension"}, {Gruppo: "Quadricipiti", Esercizio: "Affondi"}, {Gruppo: "Quadricipiti", Esercizio: "affondi in camminata"}, {Gruppo: "Quadricipiti", Esercizio: "affondi al multipower"}, {Gruppo: "Quadricipiti", Esercizio: "affondi bulgari"}, {Gruppo: "Quadricipiti", Esercizio: "leg press verticale"}, {Gruppo: "Quadricipiti", Esercizio: "hack squat"}, {Gruppo: "Quadricipiti", Esercizio: "sissy squat"}, {Gruppo: "Quadricipiti", Esercizio: "reverse nordic curl"}, {Gruppo: "Quadricipiti", Esercizio: "affondi laterali"}, {Gruppo: "Quadricipiti", Esercizio: "adductor machine"}, {Gruppo: "Quadricipiti", Esercizio: "adduzioni al cavo"}, {Gruppo: "Quadricipiti", Esercizio: "step up"}, {Gruppo: "Quadricipiti", Esercizio: "step down"}, {Gruppo: "Quadricipiti", Esercizio: "leg extension singolo"}, {Gruppo: "Quadricipiti", Esercizio: "squat multipower"},
-        {Gruppo: "Femorali", Esercizio: "Leg Curl sdraiato"}, {Gruppo: "Femorali", Esercizio: "Stacchi Gambe Tese bilanciere"}, {Gruppo: "Femorali", Esercizio: "Nordic Curl"}, {Gruppo: "Femorali", Esercizio: "Leg curl seduto"}, {Gruppo: "Femorali", Esercizio: "leg curl sdraiato singolo"}, {Gruppo: "Femorali", Esercizio: "leg curl seduto singolo"}, {Gruppo: "Femorali", Esercizio: "hyperestension (focus femorali)"}, {Gruppo: "Femorali", Esercizio: "leg curl sdraiato con manubrio"}, {Gruppo: "Femorali", Esercizio: "leg curl in piedi"}, {Gruppo: "Femorali", Esercizio: "leg curl in piedi al cavo"},
-        {Gruppo: "Femorali e glutei", Esercizio: "Hip Thrust"}, {Gruppo: "Femorali e glutei", Esercizio: "Good Morning"}, {Gruppo: "Femorali e glutei", Esercizio: "hip thrust al multipower"}, {Gruppo: "Femorali e glutei", Esercizio: "stacco rumeno bilanciere"}, {Gruppo: "Femorali e glutei", Esercizio: "hip thrust machine"}, {Gruppo: "Femorali e glutei", Esercizio: "stacco rumeno manubri"}, {Gruppo: "Femorali e glutei", Esercizio: "stacco rumeno multipower"}, {Gruppo: "Femorali e glutei", Esercizio: "abductor machine"}, {Gruppo: "Femorali e glutei", Esercizio: "abduzioni al cavo"}, {Gruppo: "Femorali e glutei", Esercizio: "estensioni al cavo"}, {Gruppo: "Femorali e glutei", Esercizio: "ponte glutei"}, {Gruppo: "Femorali e glutei", Esercizio: "ponte glutei singolo"}, {Gruppo: "Femorali e glutei", Esercizio: "stacco b-stance"}, {Gruppo: "Femorali e glutei", Esercizio: "stacco unilaterale"}, {Gruppo: "Femorali e glutei", Esercizio: "stacco da terra"}, {Gruppo: "Femorali e glutei", Esercizio: "hyperestension (focus glutei)"},
-        {Gruppo: "Petto", Esercizio: "Panca Piana Bilanciere"}, {Gruppo: "Petto", Esercizio: "Panca Inclinata"}, {Gruppo: "Petto", Esercizio: "Croci Manubri panca piana"}, {Gruppo: "Petto", Esercizio: "Pectoral Machine"}, {Gruppo: "Petto", Esercizio: "Dips Petto"}, {Gruppo: "Petto", Esercizio: "Push up"}, {Gruppo: "Petto", Esercizio: "Panca inclinata 45°"}, {Gruppo: "Petto", Esercizio: "croci al cavo alto"}, {Gruppo: "Petto", Esercizio: "croci al cavo basso"}, {Gruppo: "Petto", Esercizio: "croci al cavo (altezza petto)"}, {Gruppo: "Petto", Esercizio: "panca piana con manubri"}, {Gruppo: "Petto", Esercizio: "panca 30° con manubri"}, {Gruppo: "Petto", Esercizio: "panca 45° con manubri"}, {Gruppo: "Petto", Esercizio: "panca 15° con manubri"}, {Gruppo: "Petto", Esercizio: "panca 15° con bilanciere"}, {Gruppo: "Petto", Esercizio: "panca piana al multipower"}, {Gruppo: "Petto", Esercizio: "panca 30° al multipower"}, {Gruppo: "Petto", Esercizio: "panca 15° al multipower"}, {Gruppo: "Petto", Esercizio: "panca 45° al multipower"}, {Gruppo: "Petto", Esercizio: "croci manubri panca 45°"}, {Gruppo: "Petto", Esercizio: "incline chest press"}, {Gruppo: "Petto", Esercizio: "croci manubri panca 15°"}, {Gruppo: "Petto", Esercizio: "Chest pres"}, {Gruppo: "Petto", Esercizio: "croci manubri panca 30°"},
-        {Gruppo: "Dorsali", Esercizio: "Lat Machine presa prona"}, {Gruppo: "Dorsali", Esercizio: "Rematore Bilanciere"}, {Gruppo: "Dorsali", Esercizio: "Pulley"}, {Gruppo: "Dorsali", Esercizio: "Pull-up"}, {Gruppo: "Dorsali", Esercizio: "Rematore Manubrio"}, {Gruppo: "Dorsali", Esercizio: "lat machine presa supina"}, {Gruppo: "Dorsali", Esercizio: "lat machine presa larga"}, {Gruppo: "Dorsali", Esercizio: "pulley alta presa larga"}, {Gruppo: "Dorsali", Esercizio: "iliac pulldown"}, {Gruppo: "Dorsali", Esercizio: "lat unilaterale"}, {Gruppo: "Dorsali", Esercizio: "low row con manubri"}, {Gruppo: "Dorsali", Esercizio: "low row machine"}, {Gruppo: "Dorsali", Esercizio: "rematore t-bar"}, {Gruppo: "Dorsali", Esercizio: "chin up"}, {Gruppo: "Dorsali", Esercizio: "pulldown"}, {Gruppo: "Dorsali", Esercizio: "pulley singola"}, {Gruppo: "Dorsali", Esercizio: "pull-up presa larga"}, {Gruppo: "Dorsali", Esercizio: "pulldown busto ruotato panca 45°"}, {Gruppo: "Dorsali", Esercizio: "meadow row"},
-        {Gruppo: "Trapezio", Esercizio: "Scrollate Manubri"}, {Gruppo: "Trapezio", Esercizio: "Face Pull Trapezi"}, {Gruppo: "Trapezio", Esercizio: "Kelso shrugs"}, {Gruppo: "Trapezio", Esercizio: "tirate al mento"}, {Gruppo: "Trapezio", Esercizio: "tirate al petto"}, {Gruppo: "Trapezio", Esercizio: "Scrollate con bilanciere"},
-        {Gruppo: "Deltoide anteriore", Esercizio: "Military Press"}, {Gruppo: "Deltoide anteriore", Esercizio: "Alzate Frontali manubri"}, {Gruppo: "Deltoide anteriore", Esercizio: "Arnold Press"}, {Gruppo: "Deltoide anteriore", Esercizio: "Lento con manubri panca 80°"}, {Gruppo: "Deltoide anteriore", Esercizio: "lento con bilanciere panca 80°"}, {Gruppo: "Deltoide anteriore", Esercizio: "lento manubri panca 60°"}, {Gruppo: "Deltoide anteriore", Esercizio: "lento bilanciere panca 60°"}, {Gruppo: "Deltoide anteriore", Esercizio: "lento al multipower panca 80°"}, {Gruppo: "Deltoide anteriore", Esercizio: "lento al multipower panca 60°"}, {Gruppo: "Deltoide anteriore", Esercizio: "alzate frontali al cavo basso"}, {Gruppo: "Deltoide anteriore", Esercizio: "shoulder press"}, {Gruppo: "Deltoide anteriore", Esercizio: "lento manubri unilaterale"}, {Gruppo: "Deltoide anteriore", Esercizio: "lento avanti manubri in piedi"},
-        {Gruppo: "Deltoide laterale", Esercizio: "Alzate Laterali cavo basso"}, {Gruppo: "Deltoide laterale", Esercizio: "alzate laterali di lato panca 30°"}, {Gruppo: "Deltoide laterale", Esercizio: "Alzate laterali con manubri"}, {Gruppo: "Deltoide laterale", Esercizio: "Alzate laterali cavo altezza anca"}, {Gruppo: "Deltoide laterale", Esercizio: "alzate laterali di lato panca 60°"}, {Gruppo: "Deltoide laterale", Esercizio: "delts machine"},
-        {Gruppo: "Deltoide posteriore", Esercizio: "Alzate Posteriori"}, {Gruppo: "Deltoide posteriore", Esercizio: "Face Pull"}, {Gruppo: "Deltoide posteriore", Esercizio: "Reverse Pec Deck"}, {Gruppo: "Deltoide posteriore", Esercizio: "crossover posteriore al cavo"},
-        {Gruppo: "Bicipiti", Esercizio: "Curl Bilanciere"}, {Gruppo: "Bicipiti", Esercizio: "Curl Concentrato"}, {Gruppo: "Bicipiti", Esercizio: "Curl con manubri"}, {Gruppo: "Bicipiti", Esercizio: "Hammer curl"}, {Gruppo: "Bicipiti", Esercizio: "spider curl panca 60°"}, {Gruppo: "Bicipiti", Esercizio: "curl manubri panca 60/75°"}, {Gruppo: "Bicipiti", Esercizio: "face away curl"}, {Gruppo: "Bicipiti", Esercizio: "face away hammer curl"}, {Gruppo: "Bicipiti", Esercizio: "curl al cavo basso"}, {Gruppo: "Bicipiti", Esercizio: "hammer curl al cavo basso"}, {Gruppo: "Bicipiti", Esercizio: "bayesian curl"}, {Gruppo: "Bicipiti", Esercizio: "preacher curl panca 60°"}, {Gruppo: "Bicipiti", Esercizio: "preacher hammer curl panca 60°"}, {Gruppo: "Bicipiti", Esercizio: "spider curl al cavo basso panca 60°"}, {Gruppo: "Bicipiti", Esercizio: "cad curl"}, {Gruppo: "Bicipiti", Esercizio: "exorcist curl"}, {Gruppo: "Bicipiti", Esercizio: "zottman curl"}, {Gruppo: "Bicipiti", Esercizio: "cad hammer curl"}, {Gruppo: "Bicipiti", Esercizio: "hammer curl manubri alternato"}, {Gruppo: "Bicipiti", Esercizio: "curl manubri alternato"},
-        {Gruppo: "Tricipiti", Esercizio: "french press manubri"}, {Gruppo: "Tricipiti", Esercizio: "Dips Tricipiti"}, {Gruppo: "Tricipiti", Esercizio: "Kick Back"}, {Gruppo: "Tricipiti", Esercizio: "Pushdown con corda"}, {Gruppo: "Tricipiti", Esercizio: "overhead extension"}, {Gruppo: "Tricipiti", Esercizio: "pushdown singolo"}, {Gruppo: "Tricipiti", Esercizio: "overhead extension singolo"}, {Gruppo: "Tricipiti", Esercizio: "french press manubri panca 45°"}, {Gruppo: "Tricipiti", Esercizio: "french press bilanciere ez"}, {Gruppo: "Tricipiti", Esercizio: "french press panca 45° bilanciere"}, {Gruppo: "Tricipiti", Esercizio: "pushdown sbarra"}, {Gruppo: "Tricipiti", Esercizio: "carter extension"}, {Gruppo: "Tricipiti", Esercizio: "overhead extension manubrio"}, {Gruppo: "Tricipiti", Esercizio: "overhead extension manubrio singolo"}, {Gruppo: "Tricipiti", Esercizio: "dips assistiti"}, {Gruppo: "Tricipiti", Esercizio: "crossbody pushdown"}, {Gruppo: "Tricipiti", Esercizio: "pullover pjr manubri"}, {Gruppo: "Tricipiti", Esercizio: "pullover pjr bilanciere"}, {Gruppo: "Tricipiti", Esercizio: "jm press manubri"}, {Gruppo: "Tricipiti", Esercizio: "jm press multipower"}, {Gruppo: "Tricipiti", Esercizio: "jm press bilanciere"},
-        {Gruppo: "Polpacci", Esercizio: "Calf Raise in Piedi"}, {Gruppo: "Polpacci", Esercizio: "Calf Raise Seduto"}, {Gruppo: "Polpacci", Esercizio: "Calf Press"}, {Gruppo: "Polpacci", Esercizio: "calf raises gamba singola"}, {Gruppo: "Polpacci", Esercizio: "calf raises al multipower"}, {Gruppo: "Polpacci", Esercizio: "calf raises singolo al multipower"},
-        {Gruppo: "Addome", Esercizio: "Crunch"}, {Gruppo: "Addome", Esercizio: "Plank"}, {Gruppo: "Addome", Esercizio: "Russian Twist"}, {Gruppo: "Addome", Esercizio: "Leg Raises"}, {Gruppo: "Addome", Esercizio: "side plank"}, {Gruppo: "Addome", Esercizio: "farmer walk"}, {Gruppo: "Addome", Esercizio: "crunch alla lat"}, {Gruppo: "Addome", Esercizio: "crunch al cavo di spalle"}, {Gruppo: "Addome", Esercizio: "crunch al cavo"}
+    const database = [
+        {Gruppo: "Quadricipiti", Esercizio: "Squat"}, {Gruppo: "Quadricipiti", Esercizio: "Leg Press 45°"}, {Gruppo: "Quadricipiti", Esercizio: "Leg Extension"}, {Gruppo: "Quadricipiti", Esercizio: "Affondi Bulgari"}, {Gruppo: "Quadricipiti", Esercizio: "Hack Squat"}, {Gruppo: "Quadricipiti", Esercizio: "Sissy Squat"}, {Gruppo: "Quadricipiti", Esercizio: "Reverse Nordic Curl"}, {Gruppo: "Quadricipiti", Esercizio: "Step Up"}, {Gruppo: "Quadricipiti", Esercizio: "Adductor Machine"}, {Gruppo: "Quadricipiti", Esercizio: "Squat Multipower"},
+        {Gruppo: "Femorali", Esercizio: "Leg Curl sdraiato"}, {Gruppo: "Femorali", Esercizio: "Stacchi Gambe Tese"}, {Gruppo: "Femorali", Esercizio: "Nordic Curl"}, {Gruppo: "Femorali", Esercizio: "Leg curl seduto"}, {Gruppo: "Femorali", Esercizio: "Hyperestension (femorali)"},
+        {Gruppo: "Femorali e glutei", Esercizio: "Hip Thrust"}, {Gruppo: "Femorali e glutei", Esercizio: "Stacco Rumeno"}, {Gruppo: "Femorali e glutei", Esercizio: "Abductor Machine"}, {Gruppo: "Femorali e glutei", Esercizio: "Ponte glutei"}, {Gruppo: "Femorali e glutei", Esercizio: "Stacco da terra"},
+        {Gruppo: "Petto", Esercizio: "Panca Piana Bilanciere"}, {Gruppo: "Petto", Esercizio: "Panca Inclinata"}, {Gruppo: "Petto", Esercizio: "Pectoral Machine"}, {Gruppo: "Petto", Esercizio: "Dips Petto"}, {Gruppo: "Petto", Esercizio: "Croci ai Cavi"}, {Gruppo: "Petto", Esercizio: "Chest Press"},
+        {Gruppo: "Dorsali", Esercizio: "Lat Machine"}, {Gruppo: "Dorsali", Esercizio: "Rematore Bilanciere"}, {Gruppo: "Dorsali", Esercizio: "Pulley"}, {Gruppo: "Dorsali", Esercizio: "Pull-up"}, {Gruppo: "Dorsali", Esercizio: "Rematore Manubrio"},
+        {Gruppo: "Trapezio", Esercizio: "Scrollate Manubri"}, {Gruppo: "Trapezio", Esercizio: "Face Pull Trapezi"},
+        {Gruppo: "Deltoide anteriore", Esercizio: "Military Press"}, {Gruppo: "Deltoide anteriore", Esercizio: "Shoulder Press"},
+        {Gruppo: "Deltoide laterale", Esercizio: "Alzate Laterali"}, {Gruppo: "Deltoide laterale", Esercizio: "Delts Machine"},
+        {Gruppo: "Deltoide posteriore", Esercizio: "Face Pull"}, {Gruppo: "Deltoide posteriore", Esercizio: "Reverse Pec Deck"},
+        {Gruppo: "Bicipiti", Esercizio: "Curl Bilanciere"}, {Gruppo: "Bicipiti", Esercizio: "Hammer Curl"}, {Gruppo: "Bicipiti", Esercizio: "Curl Manubri"},
+        {Gruppo: "Tricipiti", Esercizio: "Pushdown Cavi"}, {Gruppo: "Tricipiti", Esercizio: "French Press"}, {Gruppo: "Tricipiti", Esercizio: "Dips Tricipiti"},
+        {Gruppo: "Polpacci", Esercizio: "Calf Raise"}, {Gruppo: "Addome", Esercizio: "Crunch"}, {Gruppo: "Addome", Esercizio: "Plank"}, {Gruppo: "Addome", Esercizio: "Leg Raises"}
     ];
 
-    let currentProfile = 'Default';
-    let profiles = JSON.parse(localStorage.getItem('gymManager_v5')) || { 'Default': { 1:[], 2:[], 3:[], 4:[], 5:[] } };
-    let currentDay = 1, timerInterval, volChart, setChart;
+    let profiles = JSON.parse(localStorage.getItem('gymMasterV11_Instant')) || { 'Atleta - Esempio': { 1:[], 2:[], 3:[], 4:[], 5:[] } };
+    let currentProfile = Object.keys(profiles)[0];
+    let currentAthlete = currentProfile.split(' - ')[0];
+    let currentDay = 1, timerInterval, historyChart, setChart;
     const weekColors = ['#2563eb', '#10b981', '#f59e0b', '#ef4444'];
+    const profileColors = ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4'];
 
-    function init() {
-        updateProfileList();
-        renderWorkout();
-        populateSelect();
-        initCharts();
+    function init() { 
+        updateAthleteSelector(); 
+        updateProfileSelector(); 
+        renderWorkout(); 
+        populateSelect(); 
+        initCharts(); 
     }
 
-    // GESTIONE PROFILI
+    function save() { 
+        localStorage.setItem('gymMasterV11_Instant', JSON.stringify(profiles)); 
+        updateCharts(); 
+    }
+
+    function updateAthleteSelector() {
+        const sel = document.getElementById('athleteSelector');
+        const athletes = [...new Set(Object.keys(profiles).map(p => p.split(' - ')[0]))].sort();
+        sel.innerHTML = athletes.map(a => `<option value="${a}">${a}</option>`).join('');
+        sel.value = currentAthlete;
+    }
+
+    function updateProfileSelector() {
+        const sel = document.getElementById('profileSelect');
+        const athleteProfiles = Object.keys(profiles).filter(p => p.startsWith(currentAthlete + ' - '));
+        sel.innerHTML = athleteProfiles.map(p => `<option value="${p}">${p.split(' - ')[1] || 'Default'}</option>`).join('');
+        sel.value = currentProfile;
+        document.getElementById('historyTitle').innerText = `Storico: ${currentAthlete}`;
+    }
+
+    function handleAthleteChange() {
+        currentAthlete = document.getElementById('athleteSelector').value;
+        const athleteProfiles = Object.keys(profiles).filter(p => p.startsWith(currentAthlete + ' - '));
+        currentProfile = athleteProfiles[0];
+        updateProfileSelector();
+        renderWorkout();
+        updateCharts();
+    }
+
     function createNewProfile() {
-        const name = document.getElementById('newProfileName').value.trim();
-        if(!name || profiles[name]) return alert("Nome non valido o già esistente");
-        profiles[name] = { 1:[], 2:[], 3:[], 4:[], 5:[] };
-        currentProfile = name;
+        const fullInput = document.getElementById('newProfileName').value.trim();
+        if(!fullInput.includes(' - ')) return alert("Usa: Nome - Mese");
+        profiles[fullInput] = { 1:[], 2:[], 3:[], 4:[], 5:[] };
+        currentProfile = fullInput;
+        currentAthlete = fullInput.split(' - ')[0];
         save();
-        updateProfileList();
+        
+        // AGGIORNAMENTO ISTANTANEO MENU
+        updateAthleteSelector();
+        updateProfileSelector();
+        
         document.getElementById('newProfileName').value = '';
+        renderWorkout();
+        updateCharts();
     }
 
     function loadProfile() {
@@ -158,175 +187,123 @@
     }
 
     function deleteProfile() {
-        if(currentProfile === 'Default') return alert("Profilo base non eliminabile");
-        if(confirm(`Eliminare il database di ${currentProfile}?`)) {
+        if(Object.keys(profiles).length <= 1) return;
+        if(confirm(`Eliminare ${currentProfile}?`)) {
             delete profiles[currentProfile];
-            currentProfile = 'Default';
+            currentProfile = Object.keys(profiles)[0];
+            currentAthlete = currentProfile.split(' - ')[0];
             save();
-            updateProfileList();
+            updateAthleteSelector();
+            updateProfileSelector();
+            renderWorkout();
         }
-    }
-
-    function updateProfileList() {
-        const sel = document.getElementById('profileSelect');
-        sel.innerHTML = '';
-        Object.keys(profiles).forEach(p => {
-            const opt = document.createElement('option');
-            opt.value = p; opt.textContent = p;
-            opt.selected = (p === currentProfile);
-            sel.appendChild(opt);
-        });
-    }
-
-    // CORE LOGIC
-    function save() {
-        localStorage.setItem('gymManager_v5', JSON.stringify(profiles));
-        updateCharts();
     }
 
     function renderWorkout() {
         const area = document.getElementById('workoutArea');
         const data = profiles[currentProfile][currentDay];
-        area.innerHTML = data.length ? '' : '<p style="text-align:center; padding:40px; color:#94a3b8;">Nessun esercizio. Aggiungine uno dal database!</p>';
+        area.innerHTML = data.length ? '' : '<p style="text-align:center; padding:40px; color:#94a3b8;">Nessun esercizio aggiunto.</p>';
         data.forEach(ex => {
             const card = document.createElement('div');
             card.className = 'exercise-card';
             card.innerHTML = `
                 <div class="ex-header">
-                    <div><span class="badge">${ex.Gruppo}</span><strong style="display:block; font-size:1.2rem; margin-top:8px;">${ex.Esercizio}</strong></div>
-                    <div style="display:flex; gap:10px">
-                        <button onclick="startTimer(90)" style="cursor:pointer; background:#f1f5f9; border:none; padding:8px 12px; border-radius:10px;">⏱️ 90s</button>
-                        <button onclick="deleteEx(${ex.id})" style="color:var(--danger); background:none; border:none; cursor:pointer; font-weight:bold;">🗑️</button>
-                    </div>
+                    <div><span class="badge">${ex.Gruppo}</span><strong style="display:block; font-size:1.3rem; margin-top:5px;">${ex.Esercizio}</strong></div>
+                    <button onclick="deleteEx(${ex.id})" style="color:var(--danger); background:none; border:none; cursor:pointer;">🗑️</button>
                 </div>
-                <div class="weekly-grid">
-                    ${ex.data.map((w, i) => `
-                        <div class="week-box">
-                            <h4>S${i+1} ${i>0 ? `<button onclick="copyPrev(${ex.id}, ${i})" style="font-size:9px; cursor:pointer;">CP</button>` : ''}</h4>
-                            <label>Set x Reps</label>
-                            <div style="display:flex; gap:2px">
-                                <input type="number" value="${w.set || ''}" onchange="updateVal(${ex.id},${i},'set',this.value)" placeholder="S">
-                                <input type="text" value="${w.reps || ''}" onchange="updateVal(${ex.id},${i},'reps',this.value)" placeholder="R">
-                            </div>
-                            <label>Peso (kg)</label>
-                            <input type="number" value="${w.weight || ''}" onchange="updateVal(${ex.id},${i},'weight',this.value)">
+                <div class="controls-row">
+                    <label style="margin:0">Recupero:</label>
+                    <input type="number" class="rest-input" value="${ex.restMin || 1}" onchange="updateExProp(${ex.id}, 'restMin', this.value)"> m
+                    <input type="number" class="rest-input" value="${ex.restSec || 30}" onchange="updateExProp(${ex.id}, 'restSec', this.value)"> s
+                    <button onclick="startTimer(${ex.restMin}, ${ex.restSec})" style="background:var(--dark); color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; font-weight:bold;">⏱️ START</button>
+                </div>
+                <div class="weekly-grid">${ex.data.map((w, i) => `
+                    <div class="week-box">
+                        <h4>S${i+1} ${i>0 ? `<button onclick="copyPrev(${ex.id}, ${i})" style="font-size:9px; cursor:pointer; background:#ddd; border:none; border-radius:3px;">CP</button>` : ''}</h4>
+                        <label>S x R</label>
+                        <div style="display:flex; gap:3px">
+                            <input type="number" value="${w.set || ''}" onchange="updateVal(${ex.id},${i},'set',this.value)" placeholder="S">
+                            <input type="text" value="${w.reps || ''}" onchange="updateVal(${ex.id},${i},'reps',this.value)" placeholder="R">
                         </div>
-                    `).join('')}
-                </div>
-            `;
+                        <label>Peso (kg)</label>
+                        <input type="number" value="${w.weight || ''}" onchange="updateVal(${ex.id},${i},'weight',this.value)">
+                    </div>`).join('')}</div>
+                <textarea class="notes-area" placeholder="Note..." onchange="updateExProp(${ex.id}, 'notes', this.value)">${ex.notes || ''}</textarea>`;
             area.appendChild(card);
         });
     }
 
-    function updateVal(id, wIdx, field, val) {
-        const ex = profiles[currentProfile][currentDay].find(e => e.id === id);
-        ex.data[wIdx][field] = val;
-        save();
-    }
-
-    function copyPrev(id, i) {
-        const ex = profiles[currentProfile][currentDay].find(e => e.id === id);
-        ex.data[i] = JSON.parse(JSON.stringify(ex.data[i-1]));
-        save();
-        renderWorkout();
-    }
-
-    function deleteEx(id) {
-        profiles[currentProfile][currentDay] = profiles[currentProfile][currentDay].filter(e => e.id !== id);
-        save();
-        renderWorkout();
-    }
-
-    function switchDay(day) {
-        currentDay = day;
-        document.querySelectorAll('.tab-btn').forEach((btn, i) => btn.classList.toggle('active', i+1 === day));
-        renderWorkout();
-    }
-
-    // PDF GENERATION
-    function generateFullPDF() {
-        const pview = document.getElementById('print-view');
-        let html = `<h1 style="text-align:center">REPORT ALLENAMENTO: ${currentProfile}</h1>`;
-        for(let d=1; d<=5; d++) {
-            const dayData = profiles[currentProfile][d];
-            if(dayData.length > 0) {
-                html += `<div class="print-day-section"><h2>GIORNO ${d}</h2><table><thead><tr><th class="ex-name-cell">ESERCIZIO</th><th>SETT 1</th><th>SETT 2</th><th>SETT 3</th><th>SETT 4</th></tr></thead><tbody>`;
-                dayData.forEach(ex => {
-                    html += `<tr><td class="ex-name-cell">${ex.Esercizio}<br><small>${ex.Gruppo}</small></td>
-                    ${ex.data.map(w => `<td>${w.set || '-'}/${w.reps || '-'}<br><strong>${w.weight || '-'}kg</strong></td>`).join('')}</tr>`;
-                });
-                html += `</tbody></table></div>`;
-            }
-        }
-        pview.innerHTML = html;
-        window.print();
-    }
-
-    // CHARTS & SEARCH (Stessa logica robusta delle versioni precedenti)
-    function populateSelect(f = "") {
-        const sel = document.getElementById('exerciseSelect');
-        sel.innerHTML = '';
-        database.sort((a,b)=>a.Gruppo.localeCompare(b.Gruppo))
-            .filter(ex => ex.Esercizio.toLowerCase().includes(f.toLowerCase()) || ex.Gruppo.toLowerCase().includes(f.toLowerCase()))
-            .forEach(ex => {
-                const opt = document.createElement('option');
-                opt.value = database.indexOf(ex);
-                opt.textContent = `[${ex.Gruppo.toUpperCase()}] ${ex.Esercizio}`;
-                sel.appendChild(opt);
-            });
-    }
-    function filterSelect() { populateSelect(document.getElementById('searchEx').value); }
-    function addExercise() {
-        const idx = document.getElementById('exerciseSelect').value;
-        const ex = database[idx];
-        profiles[currentProfile][currentDay].push({ id: Date.now(), ...ex, data: Array.from({length:4},()=>({set:0, reps:"0", weight:0})) });
-        save();
-        renderWorkout();
-    }
-
     function initCharts() {
         setChart = new Chart(document.getElementById('setChart'), {
-            type: 'bar', data: { labels: [], datasets: [1,2,3,4].map(i => ({ label: `S${i}`, data: [], backgroundColor: weekColors[i-1] })) },
+            type: 'bar', data: { labels: [], datasets: [0,1,2,3].map(i => ({ label: `S${i+1}`, data: [], backgroundColor: weekColors[i] })) },
             options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
         });
-        volChart = new Chart(document.getElementById('volChart'), {
-            type: 'line', data: { labels: ['S1','S2','S3','S4'], datasets: [{ label: 'Vol (kg)', data: [0,0,0,0], borderColor: '#2563eb', fill: true, backgroundColor: 'rgba(37,99,235,0.1)' }] },
-            options: { responsive: true, maintainAspectRatio: false }
+        historyChart = new Chart(document.getElementById('historyChart'), {
+            type: 'bar', data: { labels: [], datasets: [] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
         });
         updateCharts();
     }
 
     function updateCharts() {
-        let weeklyVol = [0,0,0,0], muscleData = {};
+        if(!profiles[currentProfile]) return;
+        let muscleData = {};
         Object.values(profiles[currentProfile]).forEach(day => {
             day.forEach(ex => {
                 if(!muscleData[ex.Gruppo]) muscleData[ex.Gruppo] = [0,0,0,0];
-                ex.data.forEach((w, i) => {
-                    let r = w.reps.toString().includes('-') ? (w.reps.split('-').map(Number).reduce((a,b)=>a+b)/2) : parseFloat(w.reps);
-                    weeklyVol[i] += (parseFloat(w.set)||0)*(r||0)*(parseFloat(w.weight)||0);
-                    muscleData[ex.Gruppo][i] += parseInt(w.set)||0;
-                });
+                ex.data.forEach((w, i) => muscleData[ex.Gruppo][i] += parseInt(w.set)||0);
             });
         });
         setChart.data.labels = Object.keys(muscleData);
         for(let i=0; i<4; i++) setChart.data.datasets[i].data = Object.values(muscleData).map(v => v[i]);
         setChart.update();
-        volChart.data.datasets[0].data = weeklyVol;
-        volChart.update();
+
+        const athleteProfiles = Object.keys(profiles).filter(p => p.startsWith(currentAthlete + ' - '));
+        const groups = [...new Set(database.map(e => e.Gruppo))];
+        historyChart.data.labels = groups;
+        historyChart.data.datasets = athleteProfiles.map((pName, idx) => ({
+            label: pName.split(' - ')[1],
+            data: groups.map(g => {
+                let sum = 0;
+                Object.values(profiles[pName]).forEach(day => {
+                    day.filter(ex => ex.Gruppo === g).forEach(ex => {
+                        ex.data.forEach(w => sum += parseInt(w.set)||0);
+                    });
+                });
+                return sum;
+            }),
+            backgroundColor: profileColors[idx % profileColors.length]
+        }));
+        historyChart.update();
     }
 
-    function startTimer(s) {
-        clearInterval(timerInterval);
-        document.getElementById('timer-float').style.display = 'flex';
-        let t = s;
-        timerInterval = setInterval(() => {
-            t--;
-            document.getElementById('timer-display').innerText = `${Math.floor(t/60).toString().padStart(2,'0')}:${(t%60).toString().padStart(2,'0')}`;
-            if(t <= 0) { clearInterval(timerInterval); alert("RIPOSO FINITO!"); stopTimer(); }
-        }, 1000);
+    function generatePDF() {
+        const pview = document.getElementById('print-view');
+        let html = `<h1>REPORT ATLETA: ${currentAthlete} - ${currentProfile.split(' - ')[1]}</h1>`;
+        for(let d=1; d<=5; d++){
+            const day = profiles[currentProfile][d];
+            if(day && day.length > 0) {
+                html += `<div class="print-day-section"><h2>GIORNO ${d}</h2><table><thead><tr><th class="ex-info-cell">INFO</th><th>S1</th><th>S2</th><th>S3</th><th>S4</th></tr></thead><tbody>`;
+                day.forEach(ex => {
+                    html += `<tr><td class="ex-info-cell"><strong>${ex.Esercizio}</strong><br><small>Rec: ${ex.restMin}m ${ex.restSec}s</small><br><span style="font-size:8px;">${ex.notes || ''}</span></td>
+                    ${ex.data.map(w => `<td>${w.set || '-'}/${w.reps || '-'}<br><strong>${w.weight || '-'}kg</strong></td>`).join('')}</tr>`;
+                });
+                html += `</tbody></table></div>`;
+            }
+        }
+        pview.innerHTML = html; window.print();
     }
+
+    function updateExProp(id, prop, val) { profiles[currentProfile][currentDay].find(e => e.id === id)[prop] = val; save(); }
+    function updateVal(id, wIdx, field, val) { profiles[currentProfile][currentDay].find(e => e.id === id).data[wIdx][field] = val; save(); }
+    function copyPrev(id, i) { const ex = profiles[currentProfile][currentDay].find(e => e.id === id); ex.data[i] = JSON.parse(JSON.stringify(ex.data[i-1])); save(); renderWorkout(); }
+    function deleteEx(id) { profiles[currentProfile][currentDay] = profiles[currentProfile][currentDay].filter(e=>e.id!==id); save(); renderWorkout(); }
+    function switchDay(d) { currentDay = d; document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active', i+1===d)); renderWorkout(); }
+    function populateSelect(f="") { const sel = document.getElementById('exerciseSelect'); sel.innerHTML = ''; database.sort((a,b)=>a.Gruppo.localeCompare(b.Gruppo)).filter(e => e.Esercizio.toLowerCase().includes(f.toLowerCase()) || e.Gruppo.toLowerCase().includes(f.toLowerCase())).forEach(e => { const opt = document.createElement('option'); opt.value = database.indexOf(e); opt.textContent = `[${e.Gruppo.toUpperCase()}] ${e.Esercizio}`; sel.appendChild(opt); }); }
+    function filterSelect() { populateSelect(document.getElementById('searchEx').value); }
+    function addExercise() { const ex = database[document.getElementById('exerciseSelect').value]; profiles[currentProfile][currentDay].push({ id: Date.now(), ...ex, restMin: 1, restSec: 30, notes: '', data: Array.from({length:4}, ()=>({set:0, reps:"0", weight:0})) }); save(); renderWorkout(); }
+    function startTimer(m, s) { clearInterval(timerInterval); let total = (parseInt(m)||0)*60 + (parseInt(s)||0); if(total <= 0) return; document.getElementById('timer-float').style.display = 'flex'; timerInterval = setInterval(() => { total--; let mins = Math.floor(total/60); let secs = total % 60; document.getElementById('timer-display').innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`; if(total <= 0) { clearInterval(timerInterval); alert("REST FINITO!"); stopTimer(); } }, 1000); }
     function stopTimer() { clearInterval(timerInterval); document.getElementById('timer-float').style.display = 'none'; }
-
     init();
 </script>
 </body>
